@@ -116,11 +116,6 @@
 	status = "okay";
 };
 
-&fec {
-	/* pin conflict with flexcan1 */
-	status = "disabled";
-};
-
 /*
  * I2C: I2C3_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
  * board)
