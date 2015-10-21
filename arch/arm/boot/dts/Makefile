@@ -115,6 +115,7 @@ dtb-$(CONFIG_ARCH_MXC) += \
 	imx53-smd.dtb \
 	imx6dl-colibri-eval-v3.dtb \
 	imx6dl-colibri-efs.dtb \
+	imx6dl-colibri-pathos.dtb \
 	imx6dl-nit6xlite.dtb \
 	imx6dl-nitrogen6x.dtb \
 	imx6dl-nitrogen6_max.dtb \

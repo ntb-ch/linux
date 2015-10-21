@@ -225,4 +225,22 @@
 	status = "okay";
 };
 
+&weim {
+	status = "okay";
+	/* weim memory map: 32MB on CS0, 32MB on CS1, 32MB on CS2 */
+	ranges = <0 0 0x08000000 0x02000000
+	          1 0 0x0a000000 0x02000000
+	          2 0 0x0c000000 0x02000000>;
+	/* FPGA on CS0 */
+	fpga@0,0 {
+		compatible = "ntb,flink_eim_driver";
+		reg = <0 0 0x00080000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+		bank-width = <2>;
+		fsl,weim-cs-timing = <0x07710081 0x00000100 0x04000000
+				0x00000000 0x04000040 0x00000000>;
+	};
+};
+
 
