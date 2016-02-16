@@ -18,6 +18,7 @@
 #include <linux/pagemap.h>
 #include <linux/crc32.h>
 #include <linux/compiler.h>
+#include <asm/io.h>
 #include "nodelist.h"
 #include "summary.h"
 #include "debug.h"
@@ -520,7 +521,7 @@ static int jffs2_scan_eraseblock (struct jffs2_sb_info *c, struct jffs2_eraseblo
 					sumptr = kmalloc(sumlen, GFP_KERNEL);
 					if (!sumptr)
 						return -ENOMEM;
-					memcpy(sumptr + sumlen - buf_len, buf + buf_size - buf_len, buf_len);
+					memcpy_fromio(sumptr + sumlen - buf_len, buf + buf_size - buf_len, buf_len);
 				}
 				if (buf_len < sumlen) {
 					/* Need to read more so that the entire summary node is present */
@@ -1072,7 +1073,7 @@ static int jffs2_scan_dirent_node(struct jffs2_sb_info *c, struct jffs2_eraseblo
 	if (!fd) {
 		return -ENOMEM;
 	}
-	memcpy(&fd->name, rd->name, checkedlen);
+	memcpy_fromio(&fd->name, rd->name, checkedlen);
 	fd->name[checkedlen] = 0;
 
 	crc = crc32(0, fd->name, rd->nsize);
