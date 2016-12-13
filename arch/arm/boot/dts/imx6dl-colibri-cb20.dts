@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Toradex AG
+ * Copyright 2014-2015 Toradex AG
  * Copyright 2012 Freescale Semiconductor, Inc.
  * Copyright 2011 Linaro Ltd.
  *
@@ -13,13 +13,24 @@
 
 /dts-v1/;
 
+#include <dt-bindings/input/input.h>
 #include <dt-bindings/interrupt-controller/irq.h>
 #include "imx6dl.dtsi"
 #include "imx6qdl-colibri.dtsi"
 
+/* Add the following define if you connect a Fusion display with a capacitive
+   touch controller */
+/* #define PCAP */
+
 / {
-	model = "Toradex Colibri iMX6DL/S for PATHOS";
+	model = "Toradex Colibri iMX6DL on Controller Board CB20 of NTB";
 	compatible = "toradex,colibri_imx6dl-eval", "toradex,colibri_imx6dl", "fsl,imx6dl";
+
+	aliases {
+		i2c0 = &i2cddc;
+		i2c1 = &i2c2;
+		i2c2 = &i2c3;
+	};
 
 	aliases {
 		rtc0 = &rtc_i2c;
@@ -34,13 +45,21 @@
 		mmc1 = &usdhc1; /* MMC 4bit slot */
 	};
 
+	extcon_usbc_det: usbc_det {
+		compatible = "linux,extcon-usb-gpio";
+		debounce = <25>;
+		id-gpio = <&gpio7 12 GPIO_ACTIVE_HIGH>;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_usbc_det_1>;
+	};
+
 	gpio-keys {
 		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_gpio_keys>;
 
 		wakeup {
-			label = "Wakeup";
+			label = "Wake-Up";
 			gpios = <&gpio2 22 GPIO_ACTIVE_HIGH>;
 			linux,code = <KEY_WAKEUP>;
 			debounce-interval = <10>;
@@ -50,6 +69,7 @@
 
 	pwmleds {
 		compatible = "pwm-leds";
+#ifndef PCAP
 		ledpwm2 {
 			label = "PWM<B>";
 			pwms = <&pwm1 0 50000>;
@@ -61,7 +81,7 @@
 			pwms = <&pwm4 0 50000>;
 			max-brightness = <255>;
 		};
-
+#endif
 		ledpwm4 {
 			label = "PWM<D>";
 			pwms = <&pwm2 0 50000>;
@@ -77,13 +97,14 @@
 };
 
 &backlight {
-#if 0
-	/* PWM polarity: 1 is brightest */
+#if 0 /* PWM polarity: if 1 is brightest */
+#if 0 /* Fusion 7 needs 10kHz PWM frequency */
+	pwms = <&pwm3 0 100000>;
+#endif
 	brightness-levels = <0 4 8 16 32 64 128 255>;
 	default-brightness-level = <6>;
-#else
-	/* PWM plarity: 0 is brightest */
-	brightness-levels = <0 74 128 164 192 210 255>;
+#else /* PWM plarity: if 0 is brightest */
+	brightness-levels = <0 127 191 223 239 247 251 255>;
 	default-brightness-level = <1>;
 #endif
 	status = "okay";
@@ -96,7 +117,7 @@
 	spidev0: spidev@1 {
 		compatible = "spidev";
 		reg = <0>;
-		spi-max-frequency = <50000000>;
+		spi-max-frequency = <23000000>;
 	};
 };
 
@@ -111,7 +132,6 @@
 &hdmi_video {
 	status = "okay";
 };
-
 &flexcan1 {
 	status = "okay";
 };
@@ -121,18 +141,20 @@
 };
 
 /*
- * I2C: I2C3_SDA/SCL on SODIMM pin 194/196 (e.g. RTC on carrier
+ * I2C: I2C3_SDA/SCL on SODIMM 194/196 (e.g. RTC on carrier
  * board)
  */
 &i2c3 {
 	status = "okay";
-#if 0 /* not standard pinout, disable PWM<B>, PWM<C>
+#ifdef PCAP /* not standard pinout, disable PWM<B>, PWM<C> */
 	pcap@10 {
 		/* TouchRevolution Fusion 7 and 10 multi-touch controller */
 		compatible = "touchrevolution,fusion-f0710a";
 		reg = <0x10>;
-		gpios = <&gpio1  9 0 /* SODIMM-28, Pen down interrupt */
-			 &gpio2 10 0 /* SODIMM-30, Reset */
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_pcap_1>;
+		gpios = <&gpio1  9 0 /* SODIMM 28, Pen down interrupt */
+			 &gpio2 10 0 /* SODIMM 30, Reset */
 			>;
 	};
 #endif
@@ -144,7 +166,7 @@
 };
 
 /*
- * DDC_I2C: I2C2_SDA/SCL on MXM3 pin 205/207
+ * DDC_I2C: I2C2_SDA/SCL on extension connector pin 15/16
  */
 &i2cddc {
 	status = "okay";
@@ -162,9 +184,17 @@
 	 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_weim_gpio_5
-	             &pinctrl_csi_gpio_1
-	             &pinctrl_usbh_oc_1 &pinctrl_usbc_id_1
-	             &pinctrl_usbc_det_1>;
+		     &pinctrl_csi_gpio_1
+	             &pinctrl_usbh_oc_1 &pinctrl_usbc_id_1>;
+
+	gpio {
+		pinctrl_pcap_1: pcap-1 {
+			fsl,pins = <
+				MX6QDL_PAD_GPIO_9__GPIO1_IO09	PAD_CTRL_HYS_PD /* SODIMM 28 */
+				MX6QDL_PAD_SD4_DAT2__GPIO2_IO10	PAD_CTRL_HYS_PD /* SODIMM 30 */
+			>;
+		};
+	};
 };
 
 &lcd {
@@ -179,9 +209,11 @@
 	status = "okay";
 };
 
+#ifndef PCAP
 &pwm1 {
 	status = "okay";
 };
+#endif
 
 &pwm2 {
 	status = "okay";
@@ -191,9 +223,11 @@
 	status = "okay";
 };
 
+#ifndef PCAP
 &pwm4 {
 	status = "okay";
 };
+#endif
 
 &sound_hdmi {
 	status = "okay";
@@ -220,6 +254,7 @@
 
 &usbotg {
 	status = "okay";
+	extcon = <&extcon_usbc_det>;
 };
 
 /* MMC */
@@ -244,5 +279,3 @@
 				0x00000000 0x04000040 0x00000000>;
 	};
 };
-
-
