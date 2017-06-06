@@ -184,8 +184,9 @@
 	 */
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_weim_gpio_5
-		     &pinctrl_csi_gpio_1
-	             &pinctrl_usbh_oc_1 &pinctrl_usbc_id_1>;
+	             &pinctrl_csi_gpio_1
+	             &pinctrl_usbh_oc_1 &pinctrl_usbc_id_1
+	             &pinctrl_usbc_det_1>;
 
 	gpio {
 		pinctrl_pcap_1: pcap-1 {
