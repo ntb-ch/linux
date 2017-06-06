@@ -155,6 +155,7 @@ dtb-$(CONFIG_ARCH_MXC) += \
 	imx53-smd.dtb \
 	imx6dl-colibri-cam-eval-v3.dtb \
 	imx6dl-colibri-eval-v3.dtb \
+	imx6dl-colibri-cb20.dtb \
 	imx6dl-cubox-i.dtb \
 	imx6dl-hummingboard.dtb \
 	imx6dl-sabreauto.dtb \
